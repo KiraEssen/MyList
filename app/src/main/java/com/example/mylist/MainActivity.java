@@ -5,32 +5,30 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Parcelable;
+import android.util.Log;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
     private RecyclerView cardUser;
     private ListAdapter listAdapter;
+    private AppDatabase db;
+    private UserDao userDao;
+    private List<User> user;
     int mMargin = 30;
-    SharedPreferences myPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        myPrefs = getPreferences(MODE_PRIVATE);
+
+        db = App.getInstance().getDatabase();
+        userDao = db.userDao();
 
         initRecyclerView();
-        savedJson();
         loadItem();
     }
 
@@ -42,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onUserClick(User user) {
                 Intent intent = new Intent(MainActivity.this, UserProfile.class);
-                intent.putExtra(UserProfile.USER_ID, user);
+                intent.putExtra(UserProfile.USER_LIST, user);
                 startActivity(intent);
             }
         };
@@ -52,35 +50,36 @@ public class MainActivity extends AppCompatActivity {
         cardUser.addItemDecoration(new SpacesItemDecoration(mMargin));
     }
 
-    private void savedJson(){
-        Collection<User> user = getUsers();
-        SharedPreferences.Editor prefsEditor = myPrefs.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(user);
-        prefsEditor.putString("Users", json);
-        prefsEditor.apply();
-    }
-
     private void loadItem(){
-        Gson gson = new Gson();
-        String json = myPrefs.getString("Users", "");
-        Type type = new TypeToken<Collection<User>>() {}.getType();
-        Collection<User> users = gson.fromJson(json, (Type) type);
-        listAdapter.setItems(users);
+        user = userDao.getAll();
+        Log.d("kira ", user.toString());
+        if(user.size() == 0){
+            generateUsers();
+            user = userDao.getAll();
+        }
+        listAdapter.setItems(user);
+        listAdapter.notifyDataSetChanged();
     }
 
-    private void deleteUser(){
-
+    private void insertUser(String name, String dateOfBirth, String email, int icon){
+        User user = new User(name, dateOfBirth, email, icon);
+        userDao.insert(user);
     }
 
-    private Collection<User> getUsers(){
-        return Arrays.asList(
-                new User("User1", "03.04.2000", "user1@user.com", R.drawable.user1),
-                new User("User2", "04.05.2001", "user2@user.com", R.drawable.user2),
-                new User("User3", "05.06.2002", "user3@user.com", R.drawable.user3),
-                new User("User4", "06.07.2003", "user4@user.com", R.drawable.user4),
-                new User("User5", "07.08.2004", "user5@user.com", R.drawable.user5),
-                new User("User6", "08.09.2005", "user6@user.com", R.drawable.user6)
-        );
+    private void generateUsers(){
+        insertUser("User1", "03.04.2000", "user1@user.com", R.drawable.user1);
+        insertUser("User2", "04.05.2001", "user2@user.com", R.drawable.user2);
+        insertUser("User3", "05.06.2002", "user3@user.com", R.drawable.user3);
+        insertUser("User4", "06.07.2003", "user4@user.com", R.drawable.user4);
+        insertUser("User5", "07.08.2004", "user5@user.com", R.drawable.user5);
+        insertUser("User6", "08.09.2005", "user6@user.com", R.drawable.user6);
+    }
+
+    public void deleteUser(int position) {
+        User u = user.get(position);
+        userDao.delete(u);
+        user.remove(position);
+        listAdapter.setItems(user);
+        listAdapter.notifyDataSetChanged();
     }
 }

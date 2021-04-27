@@ -27,6 +27,7 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ListViewHolder
     }
 
     public void setItems(Collection<User> users){
+        usersList.clear();
         usersList.addAll(users);
         notifyDataSetChanged();
     }
@@ -70,7 +71,17 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ListViewHolder
                 }
             });
 
-            itemView.setOnCreateContextMenuListener((View.OnCreateContextMenuListener) this);
+
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    MainActivity activity = (MainActivity) itemView.getContext();
+                    activity.deleteUser(getLayoutPosition());
+                    return false;
+                }
+            });
+
+            //itemView.setOnCreateContextMenuListener(this);
         }
 
         public void bind(User user){

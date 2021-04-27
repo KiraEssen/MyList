@@ -1,18 +1,15 @@
 package com.example.mylist;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 
 public class UserProfile extends AppCompatActivity {
-    public static final String USER_ID = "userId";
+    public static final String USER_LIST = "userList";
     private ImageView fullPhoto;
     private TextView userName;
     private TextView userDateOfBirth;
@@ -31,7 +28,7 @@ public class UserProfile extends AppCompatActivity {
         userEmail = (TextView) findViewById(R.id.userEmail);
 
         if(arguments!=null){
-            User user = (User) arguments.get(USER_ID);
+            User user = (User) arguments.get(USER_LIST);
             if(user!=null){
                 userName.setText(user.getName());
                 userDateOfBirth.setText(user.getDateOfBirth());
